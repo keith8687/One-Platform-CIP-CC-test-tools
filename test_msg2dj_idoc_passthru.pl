@@ -2,7 +2,7 @@
 use 5.010;
 
 use strict;
-#use warnings;
+use warnings;
 
 use DBI;
 use Digest::MD5 qw(md5_hex);
@@ -178,6 +178,7 @@ sub gw_md5($$$) {
 		'`;
 
 	#-----To skip particular DJ content in validation-----
+    
 	if ($interface eq "ATLXTL02") {
 		
 		$data=~s/ BEGIN="1"//g;
@@ -185,6 +186,7 @@ sub gw_md5($$$) {
 		$data=~s/<SORTL>[^<]*</<SORTL></g;
 		
 	}
+    
 	if ($interface eq "ATLXTL03") {
 		
 		$data=~s/ BEGIN="1"//g;
@@ -196,12 +198,14 @@ sub gw_md5($$$) {
 		$data=~s/<TEXT1>[^<]*</<TEXT1></g;
 
 	}
-	if ($interface eq "ATLXTL04") {
+	
+    if ($interface eq "ATLXTL04") {
 		
 		$data=~s/ BEGIN="1"//g;
 		$data=~s/ SEGMENT="1"//g;
 		
 	}
+    
 	#-----To skip particular DJ content in validation-----
 
 	my $tmp_file='/tmp/chenkei/tmp_'.$interface.'_DJ.xml';
