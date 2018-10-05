@@ -9,7 +9,6 @@ use Digest::MD5 qw(md5_hex);
 use Data::Dumper;
 use Time::Local;
 use Time::Piece;
-#use Switch;
 use File::Path qw(mkpath);
 use File::Basename;
 use MQClient::MQSeries;
@@ -204,10 +203,6 @@ sub gw_md5($$$) {
 		
 	}
 	#-----To skip particular DJ content in validation-----
-	
-	# Clear all DJ temp files for the submitted interface
-	#my $tmp_linux_command=`rm /tmp/chenkei/tmp*${interface}*DJ*`;
-	#sleep(10);
 
 	my $tmp_file='/tmp/chenkei/tmp_'.$interface.'_DJ.xml';
 	open(my $fh, '>', $tmp_file) or die "Could not open file '$tmp_file'\n";
@@ -246,13 +241,9 @@ sub test_script(@@) {
 		my $temp_processed_date = %{@{$input}[$input_count]}->{DATE_PROCESSED};
 		my $temp_delete_date = %{@{$input}[$input_count]}->{DELETE_DATE};
 
-		#$idoc2identifier{$temp_idoc1} = $temp_data_id;
 		$idoc2identifier{$temp_idoc1} = $temp_id;
 
 	}
-
-	#print "Input:\n";
-	#print Dumper(\%idoc2identifier);
 	
 	# Create output hash from idoc number to filename
 	for ($output_count=0; $output_count < scalar @output; $output_count++) {
@@ -260,11 +251,9 @@ sub test_script(@@) {
 		my $temp_output_row = $output[$output_count];
 		my @temp_output_array = split(' ', $temp_output_row);
 		
-		#my $temp_filename = @temp_output_array->[0];
 		my $temp_filename = $temp_output_array[0];
 		$temp_filename =~ s/://;
 		
-		#my $temp_idoc2 = @temp_output_array->[1];
 		my $temp_idoc2 = $temp_output_array[1];
 		$temp_idoc2 =~ s/<DOCNUM>//;
 		$temp_idoc2 =~ s/<\/DOCNUM>//;
@@ -274,9 +263,6 @@ sub test_script(@@) {
     
 	}
 
-	#print "Output:\n";
-	#print Dumper(\%idoc2file);
-	
 	# Create test script hash from data identifier to filename
 	for (keys %idoc2file){
 	
@@ -300,8 +286,6 @@ sub test_script(@@) {
 	my $rows_id = 0;
 	my @file2identifier;
 
-	#print "Test array:\n";
-
 	for (keys %identifier2file) {
 
 		$file2identifier[$rows_id][0] = $identifier2file{$_};
@@ -310,14 +294,8 @@ sub test_script(@@) {
 		
 	}
 	
-	#print Dumper(\@file2identifier);
-	
-	#print "Test array:\n";
-		
 	my @sorted_file2identifier = sort { $a->[0] cmp $b->[0] } @file2identifier;
-	
-	#print Dumper(\@sorted_file2identifier);
-	
+		
 	return @sorted_file2identifier;
 	
 }
@@ -326,19 +304,13 @@ sub test_script(@@) {
 # Prepare test parameter
 ##################################################
 
-#my $max_submission_delay=MAX_SUBMISSION_DELAY;
 my $response_wait_time=RESPONSE_WAIT_TIME;
 my $xml_root_tag;
 
 (GetOptions(
-#	'msd=s'=>\$max_submission_delay,
 	'rwt=s'=>\$response_wait_time,
 	'xrt=s'=>\$xml_root_tag,
 ) && defined $ARGV[0]) || die "Usage: $0 interface [--rwt=response_wait_time:120] [--xrt=xml_root_tag:NULL]";
-#) && defined $ARGV[0]) || die "Usage: $0 interface [--msd=max_submission_delay:120] [--rwt=response_wait_time:120] [--xrt=xml_root_tag:NULL]";
-
-#die "$0 interface [max_submission_delay:${\MAX_SUBMISSION_DELAY}] [response_wait_time:${\RESPONSE_WAIT_TIME}]"
-#	unless defined $ARGV[0];
 
 my $interface=$ARGV[0]||'';
 
@@ -350,17 +322,13 @@ die "Already running for interface ${interface}"
 
 mkpath $log_folder || die "Failed to create ${log_folder}";
 
-my $current_date = localtime->strftime('%Y%m%d%H%M%S');
-
-#my $log_prefix="${log_folder}/${interface}.".gm2put_date(timegm(gmtime())).".${response_wait_time}_${xml_root_tag}.$$";
-my $log_prefix="${log_folder}/${interface}.".$current_date.".${response_wait_time}_${xml_root_tag}.$$";
+my $log_prefix="${log_folder}/${interface}.".gm2put_date(timegm(gmtime())).".${response_wait_time}_${xml_root_tag}.$$";
 
 open(STDOUT, "| tee -ai ${log_prefix}.out.txt") || die "Can not redirect STDOUT";
 open(STDERR, "| tee -ai ${log_prefix}.err.txt") || die "Can not redirect STDERR";
 
 print gmtime()." INFO: script name is $0\n";
 print gmtime()." INFO: interface name is ${interface}\n";
-#print gmtime()." INFO: max submission delay is ${max_submission_delay}\n";
 print gmtime()." INFO: response wait time is ${response_wait_time}\n";
 print gmtime()." INFO: root tag is ${xml_root_tag}\n";
 
@@ -400,9 +368,7 @@ foreach (@test_rows) {
 	
 	}
 	else {
-		#print "Test ", $test_count++, "\n";
-		#print Dumper(\@idoc_array);
-			
+        
 		my $imh;
 		my $omh;
 		
@@ -534,12 +500,9 @@ foreach (@test_rows) {
 			}
 			
 			#-----To skip particular IIB10 content in validation-----
-			
-			# Clear all IIB10 temp files for the submitted interface
-			#my $tmp_linux_command=`rm /tmp/chenkei/tmp*${interface}*IIB10*`;
-			#sleep(10);
 
 			# Reconstruct IIB10 output with DJ idoc# sequence
+            
 			my $tmp_file='/tmp/chenkei/tmp_'.$interface.'_IIB10.xml';
 			open(my $fh, '>', $tmp_file) or die "Could not open file '$tmp_file'\n";
 			print $fh $data;
@@ -552,9 +515,6 @@ foreach (@test_rows) {
 
 			my $iib10_normalized_1st_xml=`xmllint --encode UTF-8 --format ${tmp_file} --output ${tmp_file1}`;
 			
-			#my @idoc_sequence=list_dj_idoc($tmp_file1);
-			
-			#my @root_tag_sequence=split "\n", `grep '<Z_CUSTOMER_HIERARCHY>' ${tmp_file1} -n | cut -f1 -d":"`;
 			my @root_tag_sequence=split "\n", `grep '<${xml_root_tag}>' ${tmp_file1} -n | cut -f1 -d":"`;
 
 			my $tmp_reconstructed_IIB10_output;
@@ -595,10 +555,7 @@ foreach (@test_rows) {
 			}
 			
 			$tmp_reconstructed_IIB10_output=`tail -1 ${tmp_file1} >> ${tmp_file2}`;
-			
-			#print $fh1 $tmp_reconstructed_IIB10_output;
-			#close $fh1;
-			
+						
 			my $tmp_file3='/tmp/chenkei/tmp_final_'.$interface.'_IIB10.xml';
 
 			my $iib10_normalized_2nd_xml=`xmllint --encode UTF-8 --format ${tmp_file2} --output ${tmp_file3}`;
@@ -635,8 +592,6 @@ foreach (@test_rows) {
 				
 				sleep(10);
 
-				#$tmp_linux_command=`rm /tmp/chenkei/tmp*${interface}*`;
-
 				last;	
 			
 			}
@@ -657,9 +612,8 @@ foreach (@test_rows) {
 		@idoc_array=();
 		@data_file=();
 		@idoc_sequence=();
-		#$imh->Data("");
-		#$omh->Data("");
-	}
+
+    }
 	
 	$test_row_id++;
 
